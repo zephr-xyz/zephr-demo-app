@@ -34,8 +34,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -60,6 +60,7 @@ import xyz.zephr.demo.R
 import xyz.zephr.demo.presentation.map.ZephrMapViewModel
 import xyz.zephr.demo.ui.theme.ZephrOrange
 import xyz.zephr.demo.utils.BitmapUtils
+import kotlin.math.abs
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
@@ -117,6 +118,27 @@ fun ZephrMapScreen(
 
     LaunchedEffect(uiState.value.androidLocation) {
         uiState.value.androidLocation?.let { androidMarkerState.position = it }
+    }
+
+    // Update map bearing based on Zephr heading
+    LaunchedEffect(uiState.value.heading, mapLoaded) {
+        if (mapLoaded && !cameraPositionState.isMoving) {
+            // Only update bearing if camera is not currently moving (user interaction)
+            val currentBearing = cameraPositionState.position.bearing
+            val newBearing = uiState.value.heading
+            val bearingDiff = abs(newBearing - currentBearing)
+
+            // Only update if bearing change is significant (> 1 degree) to avoid jitter
+            if (bearingDiff > 1f) {
+                cameraPositionState.move(
+                    update = CameraUpdateFactory.newCameraPosition(
+                        CameraPosition.Builder(cameraPositionState.position)
+                            .bearing(newBearing)
+                            .build()
+                    )
+                )
+            }
+        }
     }
 
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
