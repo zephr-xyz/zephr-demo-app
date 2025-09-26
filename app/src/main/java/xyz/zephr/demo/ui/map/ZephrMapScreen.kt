@@ -33,6 +33,7 @@ import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 import kotlinx.coroutines.launch
 import xyz.zephr.demo.presentation.map.ZephrMapViewModel
+import kotlin.math.abs
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
@@ -87,6 +88,27 @@ fun ZephrMapScreen(
 
     LaunchedEffect(uiState.value.androidLocation) {
         uiState.value.androidLocation?.let { androidMarkerState.position = it }
+    }
+
+    // Update map bearing based on Zephr heading
+    LaunchedEffect(uiState.value.heading, mapLoaded) {
+        if (mapLoaded && !cameraPositionState.isMoving) {
+            // Only update bearing if camera is not currently moving (user interaction)
+            val currentBearing = cameraPositionState.position.bearing
+            val newBearing = uiState.value.heading
+            val bearingDiff = abs(newBearing - currentBearing)
+
+            // Only update if bearing change is significant (> 1 degree) to avoid jitter
+            if (bearingDiff > 1f) {
+                cameraPositionState.move(
+                    update = CameraUpdateFactory.newCameraPosition(
+                        CameraPosition.Builder(cameraPositionState.position)
+                            .bearing(newBearing)
+                            .build()
+                    )
+                )
+            }
+        }
     }
 
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
