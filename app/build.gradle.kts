@@ -74,6 +74,9 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
 
+    // Compose Material Icons
+    implementation("androidx.compose.material:material-icons-extended")
+
     // Maps compose
     implementation(libs.maps.compose)
 
@@ -86,7 +89,7 @@ dependencies {
     implementation(libs.accompanist.permissions)
 
     implementation(libs.zephr.sdk) {
-        isChanging = true
+//        isChanging = true
     }
 
     testImplementation(libs.junit)
