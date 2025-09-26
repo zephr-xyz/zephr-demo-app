@@ -89,7 +89,7 @@ dependencies {
     implementation(libs.accompanist.permissions)
 
     implementation(libs.zephr.sdk) {
-//        isChanging = true
+        isChanging = true
     }
 
     testImplementation(libs.junit)
