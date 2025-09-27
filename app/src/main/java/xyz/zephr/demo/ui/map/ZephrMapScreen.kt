@@ -10,11 +10,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -52,9 +49,6 @@ fun ZephrMapScreen(
     val zephrMarkerState = remember { MarkerState() }
     val androidMarkerState = remember { MarkerState() }
 
-    // Map loaded flag
-    var mapLoaded by remember { mutableStateOf(false) }
-
     // We check permissions again so we can kill the SDK if permissions are revoked
     val permissionState = rememberMultiplePermissionsState(
         permissions = listOf(
@@ -91,8 +85,8 @@ fun ZephrMapScreen(
     }
 
     // Update map bearing based on Zephr heading
-    LaunchedEffect(uiState.value.heading, mapLoaded) {
-        if (mapLoaded && !cameraPositionState.isMoving) {
+    LaunchedEffect(uiState.value.heading, uiState.value.mapLoaded) {
+        if (uiState.value.mapLoaded && !cameraPositionState.isMoving) {
             // Only update bearing if camera is not currently moving (user interaction)
             val currentBearing = cameraPositionState.position.bearing
             val newBearing = uiState.value.heading
@@ -127,7 +121,7 @@ fun ZephrMapScreen(
                         rotationGesturesEnabled = false,
                         zoomControlsEnabled = false
                     ),
-                    onMapLoaded = { mapLoaded = true }
+                    onMapLoaded = viewModel::onMapLoaded
                 ) {
                     MapMarkers(
                         zephrMarkerState = zephrMarkerState,
@@ -135,7 +129,7 @@ fun ZephrMapScreen(
                     )
 
                     MapCameraController(
-                        mapLoaded = mapLoaded,
+                        mapLoaded = uiState.value.mapLoaded,
                         cameraPositionState = cameraPositionState,
                         uiState = uiState
                     )
