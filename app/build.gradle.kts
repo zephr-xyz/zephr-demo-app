@@ -74,6 +74,9 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
 
+    // Compose Material Icons
+    implementation("androidx.compose.material:material-icons-extended")
+
     // Maps compose
     implementation(libs.maps.compose)
 

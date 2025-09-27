@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">Zephr Demo App</string>
+
+    <!-- Map Screen Strings -->
+    <string name="legend_title">Legend</string>
+    <string name="zephr_solution">Zephr Solution</string>
+    <string name="android_solution">Android Solution</string>
+    <string name="center_on_zephr">Center on Zephr location</string>
+    <string name="zephr_marker_title">Zephr</string>
+    <string name="android_marker_title">Android</string>
 </resources>
