@@ -1,6 +1,7 @@
 package xyz.zephr.demo.ui.map
 
 import android.Manifest
+import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -22,25 +24,28 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
-import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.model.CameraPosition
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 import kotlinx.coroutines.launch
-import xyz.zephr.demo.presentation.map.ZephrMapViewModel
-import kotlin.math.abs
+import xyz.zephr.demo.TAG
+import xyz.zephr.demo.presentation.map.viewmodel.LocationViewModel
+import xyz.zephr.demo.presentation.map.viewmodel.MapViewModel
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun ZephrMapScreen(
-    viewModel: ZephrMapViewModel = hiltViewModel(checkNotNull(LocalViewModelStoreOwner.current) {
+    locationViewModel: LocationViewModel = hiltViewModel(checkNotNull(LocalViewModelStoreOwner.current) {
+        "No ViewModelStoreOwner was provided via LocalViewModelStoreOwner"
+    }, null),
+    mapViewModel: MapViewModel = hiltViewModel(checkNotNull(LocalViewModelStoreOwner.current) {
         "No ViewModelStoreOwner was provided via LocalViewModelStoreOwner"
     }, null)
 ) {
     // Collect UI State
-    val uiState = viewModel.uiState.collectAsState()
+    val locationState = locationViewModel.locationState.collectAsState()
+    val mapState = mapViewModel.mapState.collectAsState()
 
     // Camera state remembered
     val cameraPositionState = rememberCameraPositionState()
@@ -48,6 +53,9 @@ fun ZephrMapScreen(
     // Marker States
     val zephrMarkerState = remember { MarkerState() }
     val androidMarkerState = remember { MarkerState() }
+
+    // Coroutine scope for animations
+    val coroutineScope = rememberCoroutineScope()
 
     // We check permissions again so we can kill the SDK if permissions are revoked
     val permissionState = rememberMultiplePermissionsState(
@@ -64,49 +72,72 @@ fun ZephrMapScreen(
         val observer = LifecycleEventObserver { _, event ->
             if (!permissionState.allPermissionsGranted) return@LifecycleEventObserver
             when (event) {
-                Lifecycle.Event.ON_RESUME -> viewModel.start()
-                Lifecycle.Event.ON_PAUSE -> viewModel.stop()
+                Lifecycle.Event.ON_RESUME -> locationViewModel.startLocationUpdates()
+                Lifecycle.Event.ON_PAUSE -> locationViewModel.stopLocationUpdates()
                 else -> {}
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose {
             lifecycleOwner.lifecycle.removeObserver(observer)
-            viewModel.stop()
+            locationViewModel.stopLocationUpdates()
         }
     }
 
-    LaunchedEffect(uiState.value.zephrLocation) {
-        uiState.value.zephrLocation?.let { zephrMarkerState.position = it }
+    LaunchedEffect(locationState.value.zephrLocation) {
+        locationState.value.zephrLocation?.let { zephrMarkerState.position = it }
     }
 
-    LaunchedEffect(uiState.value.androidLocation) {
-        uiState.value.androidLocation?.let { androidMarkerState.position = it }
+    LaunchedEffect(locationState.value.androidLocation) {
+        locationState.value.androidLocation?.let { androidMarkerState.position = it }
     }
 
-    // Update map bearing based on Zephr heading
-    LaunchedEffect(uiState.value.heading, uiState.value.mapLoaded) {
-        if (uiState.value.mapLoaded && !cameraPositionState.isMoving) {
-            // Only update bearing if camera is not currently moving (user interaction)
-            val currentBearing = cameraPositionState.position.bearing
-            val newBearing = uiState.value.heading
-            val bearingDiff = abs(newBearing - currentBearing)
+    // Initial positioning
+    val hasInitiallyPositioned = remember { mutableStateOf(false) }
 
-            // Only update if bearing change is significant (> 1 degree) to avoid jitter
-            if (bearingDiff > 1f) {
-                cameraPositionState.move(
-                    update = CameraUpdateFactory.newCameraPosition(
-                        CameraPosition.Builder(cameraPositionState.position)
-                            .bearing(newBearing)
-                            .build()
-                    )
-                )
-            }
+    LaunchedEffect(mapState.value.mapLoaded) {
+        if (!mapState.value.mapLoaded || hasInitiallyPositioned.value) return@LaunchedEffect
+
+        // Wait until we get the first Zephr location
+        var zephrLocation = locationState.value.zephrLocation
+        while (zephrLocation == null) {
+            kotlinx.coroutines.delay(100)
+            zephrLocation = locationState.value.zephrLocation
         }
+
+        hasInitiallyPositioned.value = true
+        cameraPositionState.animate(
+            update = com.google.android.gms.maps.CameraUpdateFactory.newCameraPosition(
+                com.google.android.gms.maps.model.CameraPosition.Builder()
+                    .bearing(locationState.value.heading)
+                    .zoom(16f)
+                    .target(zephrLocation)
+                    .build()
+            ),
+            durationMs = 2000
+        )
+    }
+
+
+    // Delegate bearing decision to VM and apply the decided bearing
+    LaunchedEffect(
+        locationState.value.heading,
+        mapState.value.mapLoaded,
+        cameraPositionState.isMoving
+    ) {
+        mapViewModel.onHeadingUpdate(locationState.value.heading, cameraPositionState.isMoving)
+        if (!mapState.value.mapLoaded || cameraPositionState.isMoving) return@LaunchedEffect
+        cameraPositionState.move(
+            update = com.google.android.gms.maps.CameraUpdateFactory.newCameraPosition(
+                com.google.android.gms.maps.model.CameraPosition.Builder(cameraPositionState.position)
+                    .bearing(mapState.value.cameraPosition.bearing)
+                    .build()
+            )
+        )
     }
 
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-        if (uiState.value.zephrLocation != null) {
+        if (locationState.value.zephrLocation != null) {
             Box(
                 modifier = Modifier
                     .padding(innerPadding)
@@ -121,17 +152,14 @@ fun ZephrMapScreen(
                         rotationGesturesEnabled = false,
                         zoomControlsEnabled = false
                     ),
-                    onMapLoaded = viewModel::onMapLoaded
+                    onMapLoaded = {
+                        Log.d(TAG, "GoogleMap onMapLoaded callback fired - map successfully loaded")
+                        mapViewModel.onMapLoaded()
+                    }
                 ) {
                     MapMarkers(
                         zephrMarkerState = zephrMarkerState,
                         androidMarkerState = androidMarkerState
-                    )
-
-                    MapCameraController(
-                        mapLoaded = uiState.value.mapLoaded,
-                        cameraPositionState = cameraPositionState,
-                        uiState = uiState
                     )
                 }
 
@@ -151,14 +179,13 @@ fun ZephrMapScreen(
                 )
 
                 // Zoom-to-Zephr location
-                val coroutineScope = rememberCoroutineScope()
                 ZoomToLocationButton(
                     onClick = {
-                        uiState.value.zephrLocation?.let { location ->
+                        locationState.value.zephrLocation?.let { location ->
                             coroutineScope.launch {
                                 cameraPositionState.animate(
-                                    update = CameraUpdateFactory.newCameraPosition(
-                                        CameraPosition.Builder()
+                                    update = com.google.android.gms.maps.CameraUpdateFactory.newCameraPosition(
+                                        com.google.android.gms.maps.model.CameraPosition.Builder()
                                             .target(location)
                                             .zoom(16f)
                                             .build()
