@@ -80,10 +80,15 @@ class ZephrMapViewModel(
         ZephrLocationManager.removeLocationUpdates(zephrListener)
         locationManager.removeUpdates(androidListener)
     }
+
+    fun onMapLoaded() {
+        _uiState.value = _uiState.value.copy(mapLoaded = true)
+    }
 }
 
 data class MapUiState(
     val androidLocation: LatLng? = null,
     val zephrLocation: LatLng? = null,
-    val heading: Float = 0f
+    val heading: Float = 0f,
+    val mapLoaded: Boolean = false
 )
