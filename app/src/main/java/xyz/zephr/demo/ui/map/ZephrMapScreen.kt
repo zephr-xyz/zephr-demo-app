@@ -161,6 +161,13 @@ fun ZephrMapScreen(
                         zephrMarkerState = zephrMarkerState,
                         androidMarkerState = androidMarkerState
                     )
+
+                    // FOV Sector overlay using dedicated component
+                    FovSector(
+                        centerLocation = locationState.value.zephrLocation,
+                        fovPoints = locationState.value.fovPoints,
+                        alpha = 1f
+                    )
                 }
 
                 // Legend overlay
