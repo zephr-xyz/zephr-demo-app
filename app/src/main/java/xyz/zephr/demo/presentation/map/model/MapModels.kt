@@ -17,7 +17,10 @@ interface MapEngine {
 data class LocationState(
     val zephrLocation: LatLng? = null,
     val androidLocation: LatLng? = null,
-    val heading: Float = 0f
+    val heading: Float = 0f,
+    val fovPoints: List<LatLng> = emptyList(),
+    val fovAngle: Float = 68f, // Default FOV angle in degrees
+    val fovRadius: Float = 250f // Default FOV radius in meters
 )
 
 data class MapState(

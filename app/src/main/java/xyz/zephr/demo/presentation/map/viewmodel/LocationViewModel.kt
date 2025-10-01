@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import xyz.zephr.demo.TAG
 import xyz.zephr.demo.presentation.map.model.LocationState
+import xyz.zephr.demo.utils.FovUtils
 import xyz.zephr.sdk.v2.ZephrEventListener
 import xyz.zephr.sdk.v2.ZephrLocationManager
 import xyz.zephr.sdk.v2.model.ZephrGnssEvent
@@ -48,8 +49,10 @@ class LocationViewModel @Inject constructor(
                 _locationState.value = _locationState.value.copy(
                     zephrLocation = LatLng(location.latitude, location.longitude)
                 )
+                updateFovPoints()
             } else {
                 Log.d(TAG, "GNSS Update - Status: $status, Location: null")
+                updateFovPoints()
             }
         }
 
@@ -68,6 +71,7 @@ class LocationViewModel @Inject constructor(
             if (headingDeg != null) {
                 Log.d(TAG, "Bearing Update: Heading=$headingDeg° (source: timestamp)")
                 _locationState.value = _locationState.value.copy(heading = headingDeg)
+                updateFovPoints()
             } else {
                 Log.d(TAG, "Bearing Update: No headingDegWithTimestamp available")
             }
@@ -78,6 +82,27 @@ class LocationViewModel @Inject constructor(
         _locationState.value = _locationState.value.copy(
             androidLocation = LatLng(p0.latitude, p0.longitude)
         )
+    }
+
+    /**
+     * Updates the FOV points based on current location, heading, FOV angle, and radius.
+     */
+    private fun updateFovPoints() {
+        val currentState = _locationState.value
+        val zephrLocation = currentState.zephrLocation
+
+        if (zephrLocation != null) {
+            val fovPoints = FovUtils.computeFovSectorPoints(
+                center = zephrLocation,
+                bearing = currentState.heading,
+                fovAngle = currentState.fovAngle,
+                radius = currentState.fovRadius
+            )
+            _locationState.value = currentState.copy(fovPoints = fovPoints)
+        } else {
+            // Clear FOV points if no location available
+            _locationState.value = currentState.copy(fovPoints = emptyList())
+        }
     }
 
     fun startLocationUpdates() {
