@@ -98,7 +98,7 @@ class PlacesRepositoryImpl @Inject constructor(
                 lat = lat,
                 lng = lng,
                 distance = radius,
-                minConfidence = 0.5,
+                minConfidence = 0.95,
                 limit = limit
             )
 

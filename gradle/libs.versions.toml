@@ -53,7 +53,7 @@ androidx-material-icons-extended = { group = "androidx.compose.material", name =
 androidx-security-crypto = { group = "androidx.security", name = "security-crypto", version.ref = "securityCrypto" }
 
 # TODO: revert to pr-0 once changes merged
-zephr-sdk = {group = "xyz.zephr.library.pr-2857", name = "zephrLib", version.ref = "zephrSdk"}
+zephr-sdk = { group = "xyz.zephr.library.pr-0", name = "zephrLib", version.ref = "zephrSdk" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
