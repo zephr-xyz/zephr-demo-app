@@ -3,6 +3,7 @@ package xyz.zephr.demo.ui.map.components
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import com.google.maps.android.compose.Marker
@@ -28,44 +29,64 @@ fun POIMarkersLayer(
     val selectedDotColor = colorResource(id = R.color.place_marker_red)
     val glowColor = colorResource(id = R.color.place_marker_glow_orange)
 
-    val highlightedPlaceIds = remember(locationState, places, highlightEnabled) {
-        if (!highlightEnabled) {
+    val fovPlaceIds = remember(
+        locationState.zephrLocation,
+        locationState.heading,
+        locationState.fovAngle,
+        locationState.fovRadius,
+        places
+    ) {
+        val userLocation = locationState.zephrLocation
+        if (userLocation == null) {
             emptySet<String>()
         } else {
-            val userLocation = locationState.zephrLocation
-            if (userLocation == null) {
-                emptySet<String>()
-            } else {
-                places.filter { place ->
-                    FovUtils.isPointInFov(
-                        userLocation = userLocation,
-                        targetLocation = place.location,
-                        heading = locationState.heading,
-                        fovAngle = locationState.fovAngle,
-                        radiusMeters = locationState.fovRadius.toDouble()
-                    )
-                }.map { it.id }.toSet()
-            }
+            places.filter { place ->
+                FovUtils.isPointInFov(
+                    userLocation = userLocation,
+                    targetLocation = place.location,
+                    heading = locationState.heading,
+                    fovAngle = locationState.fovAngle,
+                    radiusMeters = locationState.fovRadius.toDouble()
+                )
+            }.map { it.id }.toSet()
         }
+    }
+
+    val highlightedPlaceIds = remember(fovPlaceIds, highlightEnabled) {
+        if (highlightEnabled) fovPlaceIds else emptySet()
     }
 
     places.forEach { place ->
         val isSelected = place.id == selectedPlaceId
         val isHighlighted = highlightedPlaceIds.contains(place.id)
-        val iconData = remember(place.id, place.name, isSelected, isHighlighted) {
-            val dotColor = when {
-                isSelected -> selectedDotColor
-                isHighlighted -> glowColor
-                else -> placeDotColor
+        val isInFov = fovPlaceIds.contains(place.id)
+        val iconData = remember(place.id, place.name, isSelected, isHighlighted, isInFov) {
+            if (isInFov) {
+                val dotColor = when {
+                    isSelected -> selectedDotColor
+                    isHighlighted -> glowColor
+                    else -> placeDotColor
+                }
+                MapIconUtils.createLabeledDotIcon(
+                    context = context,
+                    label = place.name,
+                    dotColor = dotColor,
+                    glowColor = if (isHighlighted) glowColor else null,
+                    backgroundColor = labelBackgroundColor,
+                    textColor = labelTextColor
+                )
+            } else {
+                val dotColor = if (isSelected) selectedDotColor else placeDotColor
+                MapIconUtils.MarkerIconData(
+                    descriptor = MapIconUtils.createDotIcon(
+                        context = context,
+                        radiusDp = MapIconUtils.Sizes.MEDIUM,
+                        color = dotColor
+                    ),
+                    anchorX = 0.5f,
+                    anchorY = 0.5f
+                )
             }
-            MapIconUtils.createLabeledDotIcon(
-                context = context,
-                label = place.name,
-                dotColor = dotColor,
-                glowColor = if (isHighlighted) glowColor else null,
-                backgroundColor = labelBackgroundColor,
-                textColor = labelTextColor
-            )
         }
 
         key(place.id) {
@@ -77,8 +98,8 @@ fun POIMarkersLayer(
                 title = place.name,
                 snippet = place.description,
                 icon = iconData.descriptor,
-                flat = true,
-                anchor = androidx.compose.ui.geometry.Offset(iconData.anchorX, iconData.anchorY),
+                flat = false,
+                anchor = Offset(iconData.anchorX, iconData.anchorY),
                 onClick = { false }
             )
         }
