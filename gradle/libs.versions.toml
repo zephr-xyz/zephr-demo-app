@@ -12,7 +12,7 @@ mapsCompose = "6.10.0"
 secrets = "2.0.1"
 hilt = "2.57.1"
 hiltNavigationCompose = "1.3.0"
-zephrSdk = "0.0.2-SNAPSHOT"
+zephrSdk = "0.0.3-SNAPSHOT"
 accompanistPermissions = "0.37.3"
 okhttp = "4.12.0"
 retrofit = "2.9.0"
@@ -52,7 +52,6 @@ firebase-auth = { group = "com.google.firebase", name = "firebase-auth-ktx" }
 androidx-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended", version.ref = "materialIconsExtended" }
 androidx-security-crypto = { group = "androidx.security", name = "security-crypto", version.ref = "securityCrypto" }
 
-# TODO: revert to pr-0 once changes merged
 zephr-sdk = { group = "xyz.zephr.library.pr-0", name = "zephrLib", version.ref = "zephrSdk" }
 
 [plugins]
