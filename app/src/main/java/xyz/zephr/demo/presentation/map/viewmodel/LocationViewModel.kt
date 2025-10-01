@@ -16,7 +16,7 @@ import xyz.zephr.demo.presentation.map.model.LocationState
 import xyz.zephr.demo.utils.FovUtils
 import xyz.zephr.sdk.v2.ZephrEventListener
 import xyz.zephr.sdk.v2.ZephrLocationManager
-import xyz.zephr.sdk.v2.model.ZephrGnssEvent
+import xyz.zephr.sdk.v2.model.ZephrLocationEvent
 import xyz.zephr.sdk.v2.model.ZephrPoseEvent
 import javax.inject.Inject
 
@@ -38,9 +38,9 @@ class LocationViewModel @Inject constructor(
 
 
     private val zephrListener = object : ZephrEventListener {
-        override fun onZephrGnssReceived(zephrGnssEvent: ZephrGnssEvent) {
-            val status = zephrGnssEvent.status
-            val location = zephrGnssEvent.location
+        override fun onZephrLocationChanged(zephrLocationEvent: ZephrLocationEvent) {
+            val status = zephrLocationEvent.status
+            val location = zephrLocationEvent.location
             if (location != null) {
                 Log.d(
                     TAG,
