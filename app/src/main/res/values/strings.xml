@@ -8,4 +8,8 @@
     <string name="center_on_zephr">Center on Zephr location</string>
     <string name="zephr_marker_title">Zephr</string>
     <string name="android_marker_title">Android</string>
+    <string name="toggle_show_zephr">Show Zephr</string>
+    <string name="toggle_hide_zephr">Hide Zephr</string>
+    <string name="toggle_zephr_content_description">Toggle Zephr overlay visibility</string>
+    <string name="bearing_label">Bearing</string>
 </resources>

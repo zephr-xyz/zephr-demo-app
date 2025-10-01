@@ -7,4 +7,12 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- Place marker colors -->
+    <color name="place_marker_yellow">#FFFFEB3B</color>
+    <color name="place_marker_red">#FFF44336</color>
+    <color name="place_marker_glow_orange">#FFFF9800</color>
+    <color name="place_marker_label_background">#CC2B2B2B</color>
+    <color name="chip_background">#66000000</color>
+    <color name="chip_text">#FFFFFFFF</color>
 </resources>

@@ -1,0 +1,33 @@
+{
+  "project_info": {
+    "project_number": "477801842506",
+    "firebase_url": "https://zephr-xyz-firebase-development-default-rtdb.firebaseio.com",
+    "project_id": "zephr-xyz-firebase-development",
+    "storage_bucket": "zephr-xyz-firebase-development.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:477801842506:android:d6bff2a52b3ed7b821e3b3",
+        "android_client_info": {
+          "package_name": "xyz.zephr.demo"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDNJNSxDVAe4WxtB-Z1RZHTeyzsxJ0sXq0"
+        },
+        {
+          "current_key": "AIzaSyBZZamkTe7Dgk2lTir7zrE-rHoITODXdO8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
