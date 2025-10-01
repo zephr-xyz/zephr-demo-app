@@ -28,6 +28,12 @@ class MapViewModel @Inject constructor() : ViewModel() {
         )
     }
 
+    fun toggleZephrOverlay() {
+        _mapState.value = _mapState.value.copy(
+            showZephrOverlay = !_mapState.value.showZephrOverlay
+        )
+    }
+
     fun onHeadingUpdate(headingDeg: Float, isCameraMoving: Boolean) {
         val currentState = _mapState.value
         if (!currentState.mapLoaded || isCameraMoving) return

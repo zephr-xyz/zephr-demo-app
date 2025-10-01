@@ -2,6 +2,7 @@ package xyz.zephr.demo.presentation.map.model
 
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.flow.Flow
+import xyz.zephr.demo.data.model.Place
 
 /**
  * Interface for map engine abstraction.
@@ -23,10 +24,19 @@ data class LocationState(
     val fovRadius: Float = 250f // Default FOV radius in meters
 )
 
+data class PlacesUiState(
+    val places: List<Place> = emptyList(),
+    val selectedPlace: Place? = null,
+    val isLoading: Boolean = false,
+    val error: String? = null,
+    val highlightedPlaceIds: Set<String> = emptySet()
+)
+
 data class MapState(
     val mapLoaded: Boolean = false,
     val isFollowingZephr: Boolean = true,
-    val cameraPosition: MapCameraPosition = MapCameraPosition()
+    val cameraPosition: MapCameraPosition = MapCameraPosition(),
+    val showZephrOverlay: Boolean = true
 )
 
 data class MapCameraPosition(

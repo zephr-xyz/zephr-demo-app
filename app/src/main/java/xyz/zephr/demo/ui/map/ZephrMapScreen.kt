@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -32,6 +33,10 @@ import kotlinx.coroutines.launch
 import xyz.zephr.demo.TAG
 import xyz.zephr.demo.presentation.map.viewmodel.LocationViewModel
 import xyz.zephr.demo.presentation.map.viewmodel.MapViewModel
+import xyz.zephr.demo.presentation.map.viewmodel.PlacesViewModel
+import xyz.zephr.demo.ui.map.components.BearingChip
+import xyz.zephr.demo.ui.map.components.OverlayToggleButton
+import xyz.zephr.demo.ui.map.components.POIMarkersLayer
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
@@ -41,11 +46,15 @@ fun ZephrMapScreen(
     }, null),
     mapViewModel: MapViewModel = hiltViewModel(checkNotNull(LocalViewModelStoreOwner.current) {
         "No ViewModelStoreOwner was provided via LocalViewModelStoreOwner"
+    }, null),
+    placesViewModel: PlacesViewModel = hiltViewModel(checkNotNull(LocalViewModelStoreOwner.current) {
+        "No ViewModelStoreOwner was provided via LocalViewModelStoreOwner"
     }, null)
 ) {
     // Collect UI State
     val locationState = locationViewModel.locationState.collectAsState()
     val mapState = mapViewModel.mapState.collectAsState()
+    val placesState = placesViewModel.uiState.collectAsState()
 
     // Camera state remembered
     val cameraPositionState = rememberCameraPositionState()
@@ -53,6 +62,29 @@ fun ZephrMapScreen(
     // Marker States
     val zephrMarkerState = remember { MarkerState() }
     val androidMarkerState = remember { MarkerState() }
+
+    // Place marker states
+    val placeMarkerStates = remember {
+        mutableStateMapOf<String, MarkerState>()
+    }
+
+    // Update place marker states when places change
+    LaunchedEffect(placesState.value.places) {
+        placesState.value.places.forEach { place ->
+            if (placeMarkerStates[place.id] == null) {
+                placeMarkerStates[place.id] = MarkerState(position = place.location)
+            }
+        }
+    }
+
+    // Update marker positions if place location changes
+    LaunchedEffect(placesState.value.places) {
+        placesState.value.places.forEach { place ->
+            placeMarkerStates[place.id]?.let { state ->
+                state.position = place.location
+            }
+        }
+    }
 
     // Coroutine scope for animations
     val coroutineScope = rememberCoroutineScope()
@@ -90,6 +122,13 @@ fun ZephrMapScreen(
 
     LaunchedEffect(locationState.value.androidLocation) {
         locationState.value.androidLocation?.let { androidMarkerState.position = it }
+    }
+
+    // Trigger places loading when Zephr location changes
+    LaunchedEffect(locationState.value.zephrLocation) {
+        locationState.value.zephrLocation?.let { location ->
+            placesViewModel.initializeWithLocation(location)
+        }
     }
 
     // Initial positioning
@@ -157,16 +196,34 @@ fun ZephrMapScreen(
                         mapViewModel.onMapLoaded()
                     }
                 ) {
-                    MapMarkers(
-                        zephrMarkerState = zephrMarkerState,
-                        androidMarkerState = androidMarkerState
-                    )
+                    if (mapState.value.showZephrOverlay) {
+                        MapMarkers(
+                            zephrMarkerState = zephrMarkerState,
+                            androidMarkerState = androidMarkerState
+                        )
 
-                    // FOV Sector overlay using dedicated component
-                    FovSector(
-                        centerLocation = locationState.value.zephrLocation,
-                        fovPoints = locationState.value.fovPoints,
-                        alpha = 1f
+                        // FOV Sector overlay using dedicated component
+                        FovSector(
+                            centerLocation = locationState.value.zephrLocation,
+                            fovPoints = locationState.value.fovPoints,
+                            alpha = 1f
+                        )
+                    } else {
+                        // Still show android marker
+                        MapMarker(
+                            markerState = androidMarkerState,
+                            type = MarkerType.ANDROID,
+                            key = "android_location_marker"
+                        )
+                    }
+
+                    // Place markers
+                    POIMarkersLayer(
+                        locationState = locationState.value,
+                        places = placesState.value.places,
+                        selectedPlaceId = placesState.value.selectedPlace?.id,
+                        markerStates = placeMarkerStates,
+                        highlightEnabled = mapState.value.showZephrOverlay
                     )
                 }
 
@@ -183,6 +240,21 @@ fun ZephrMapScreen(
                         top = 8.dp,
                         bottom = 16.dp
                     )
+                )
+
+                OverlayToggleButton(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(top = innerPadding.calculateTopPadding() + 16.dp, end = 16.dp),
+                    isChecked = mapState.value.showZephrOverlay,
+                    onCheckedChange = { mapViewModel.toggleZephrOverlay() }
+                )
+
+                BearingChip(
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .padding(top = innerPadding.calculateTopPadding() + 16.dp, start = 16.dp),
+                    heading = locationState.value.heading
                 )
 
                 // Zoom-to-Zephr location

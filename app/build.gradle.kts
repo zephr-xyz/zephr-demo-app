@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
@@ -7,6 +8,7 @@ plugins {
     alias(libs.plugins.secrets.gradle.plugin)
     alias(libs.plugins.hilt.android)
     kotlin("kapt")
+    alias(libs.plugins.google.services)
 }
 
 android {
@@ -18,14 +20,30 @@ android {
         minSdk = 31
         targetSdk = 36
         versionCode = 1
-        versionName = "1.0"
+        versionName = "0.0.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    val secretsFile = rootProject.file("secrets.properties")
+    val secrets = Properties().apply {
+        require(secretsFile.exists()) {
+            "Missing secrets.properties file at ${secretsFile.absolutePath}"
+        }
+        secretsFile.inputStream().use { load(it) }
+    }
+
     buildTypes {
+        debug {
+            buildConfigField("String", "API_BASE_URL", "\"${secrets.getProperty("API_BASE_URL")}\"")
+            buildConfigField("String", "API_USERNAME", "\"${secrets.getProperty("API_USERNAME")}\"")
+            buildConfigField("String", "API_PASSWORD", "\"${secrets.getProperty("API_PASSWORD")}\"")
+        }
         release {
             isMinifyEnabled = false
+            buildConfigField("String", "API_BASE_URL", "\"${secrets.getProperty("API_BASE_URL")}\"")
+            buildConfigField("String", "API_USERNAME", "\"${secrets.getProperty("API_USERNAME")}\"")
+            buildConfigField("String", "API_PASSWORD", "\"${secrets.getProperty("API_PASSWORD")}\"")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -75,7 +93,7 @@ dependencies {
     implementation(libs.androidx.material3)
 
     // Compose Material Icons
-    implementation("androidx.compose.material:material-icons-extended")
+    implementation(libs.androidx.material.icons.extended)
 
     // Maps compose
     implementation(libs.maps.compose)
@@ -88,9 +106,21 @@ dependencies {
     // Permissions
     implementation(libs.accompanist.permissions)
 
+    // Network
+    implementation(libs.okhttp)
+    implementation(libs.okhttp.logging)
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.gson)
+    implementation(libs.gson)
+
     implementation(libs.zephr.sdk) {
         isChanging = true
     }
+
+    // Firebase
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth)
+    implementation(libs.androidx.security.crypto)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
