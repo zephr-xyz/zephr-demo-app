@@ -18,6 +18,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -34,29 +35,29 @@ fun OverlayToggleButton(
 ) {
     Row(
         modifier = modifier
-            .height(40.dp)
+            .height(26.dp)
             .background(
                 color = colorResource(id = R.color.chip_background),
                 shape = RoundedCornerShape(8.dp)
             )
-            .padding(horizontal = 12.dp),
+            .padding(horizontal = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+        horizontalArrangement = Arrangement.spacedBy(6.dp)
     ) {
         Icon(
             imageVector = if (isChecked) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
             contentDescription = stringResource(id = R.string.toggle_zephr_content_description),
             tint = colorResource(id = R.color.chip_text),
             modifier = Modifier
-                .size(20.dp)
+                .size(14.dp)
         )
         Text(
             text = if (isChecked) stringResource(id = R.string.toggle_hide_zephr) else stringResource(
                 id = R.string.toggle_show_zephr
             ),
             color = colorResource(id = R.color.chip_text),
-            fontSize = 14.sp,
-            modifier = Modifier.width(82.dp),
+            fontSize = 11.sp,
+            modifier = Modifier.width(64.dp),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
@@ -64,7 +65,8 @@ fun OverlayToggleButton(
             checked = isChecked,
             onCheckedChange = onCheckedChange,
             colors = SwitchDefaults.colors(checkedThumbColor = colorResource(id = R.color.chip_text)),
-            modifier = Modifier.height(20.dp)
+            modifier = Modifier
+                .scale(0.65f)
         )
     }
 }

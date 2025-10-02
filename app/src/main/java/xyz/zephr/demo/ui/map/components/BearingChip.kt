@@ -30,33 +30,34 @@ fun BearingChip(
 ) {
     Row(
         modifier = modifier
-            .height(40.dp)
+            .height(26.dp)
             .background(
                 color = colorResource(id = R.color.chip_background),
                 shape = RoundedCornerShape(8.dp)
             )
-            .padding(horizontal = 12.dp),
+            .padding(horizontal = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         Icon(
             imageVector = Icons.Filled.Explore,
             contentDescription = stringResource(id = R.string.bearing_label),
             tint = colorResource(id = R.color.chip_text),
-            modifier = Modifier.size(20.dp)
+            modifier = Modifier.size(14.dp)
         )
         Text(
             text = stringResource(id = R.string.bearing_label),
             color = colorResource(id = R.color.chip_text),
-            fontSize = 14.sp,
-            modifier = Modifier.width(60.dp),
+            fontSize = 12.sp,
+            modifier = Modifier.width(52.dp),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
         Text(
             text = "${"%.1f".format(heading)}°",
             color = colorResource(id = R.color.chip_text),
-            fontSize = 14.sp
+            fontSize = 12.sp,
+            modifier = Modifier.width(36.dp)
         )
     }
 }
