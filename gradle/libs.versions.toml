@@ -52,7 +52,7 @@ firebase-auth = { group = "com.google.firebase", name = "firebase-auth-ktx" }
 androidx-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended", version.ref = "materialIconsExtended" }
 androidx-security-crypto = { group = "androidx.security", name = "security-crypto", version.ref = "securityCrypto" }
 
-zephr-sdk = { group = "xyz.zephr.library.pr-0", name = "zephrLib", version.ref = "zephrSdk" }
+zephr-sdk = { group = "xyz.zephr.library.pr-prod", name = "zephrLib", version.ref = "zephrSdk" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
