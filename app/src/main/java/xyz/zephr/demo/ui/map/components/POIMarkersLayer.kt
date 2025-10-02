@@ -61,7 +61,7 @@ fun POIMarkersLayer(
         val isHighlighted = highlightedPlaceIds.contains(place.id)
         val isInFov = fovPlaceIds.contains(place.id)
         val iconData = remember(place.id, place.name, isSelected, isHighlighted, isInFov) {
-            if (isInFov) {
+            if (isInFov && highlightEnabled) {
                 val dotColor = when {
                     isSelected -> selectedDotColor
                     isHighlighted -> glowColor
