@@ -2,9 +2,12 @@ package xyz.zephr.demo.ui.map
 
 import android.Manifest
 import android.util.Log
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -228,55 +231,70 @@ fun ZephrMapScreen(
                 }
 
                 // Legend overlay
-                Legend(
-                    paddingValues = innerPadding,
-                    legendContainerPadding = PaddingValues(bottom = 12.dp),
-                    legendBoxPadding = PaddingValues(all = 16.dp),
-                    legendTitlePadding = PaddingValues(top = 16.dp, start = 16.dp),
-                    legendItemPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp),
-                    legendLastItemPadding = PaddingValues(
-                        start = 16.dp,
-                        end = 16.dp,
-                        top = 8.dp,
-                        bottom = 16.dp
+                Row(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .fillMaxWidth()
+                        .padding(
+                            start = 16.dp,
+                            end = 16.dp,
+                            bottom = innerPadding.calculateBottomPadding() + 8.dp
+                        ),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.Bottom
+                ) {
+                    Legend(
+                        legendBoxPadding = PaddingValues(all = 16.dp),
+                        legendTitlePadding = PaddingValues(top = 16.dp, start = 16.dp),
+                        legendItemPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp),
+                        legendLastItemPadding = PaddingValues(
+                            start = 16.dp,
+                            end = 16.dp,
+                            top = 8.dp,
+                            bottom = 16.dp
+                        )
                     )
-                )
 
-                OverlayToggleButton(
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(top = innerPadding.calculateTopPadding() + 16.dp, end = 16.dp),
-                    isChecked = mapState.value.showZephrOverlay,
-                    onCheckedChange = { mapViewModel.toggleZephrOverlay() }
-                )
-
-                BearingChip(
-                    modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .padding(top = innerPadding.calculateTopPadding() + 16.dp, start = 16.dp),
-                    heading = locationState.value.heading
-                )
-
-                // Zoom-to-Zephr location
-                ZoomToLocationButton(
-                    onClick = {
-                        locationState.value.zephrLocation?.let { location ->
-                            coroutineScope.launch {
-                                cameraPositionState.animate(
-                                    update = com.google.android.gms.maps.CameraUpdateFactory.newCameraPosition(
-                                        com.google.android.gms.maps.model.CameraPosition.Builder()
-                                            .target(location)
-                                            .zoom(16f)
-                                            .build()
+                    ZoomToLocationButton(
+                        onClick = {
+                            locationState.value.zephrLocation?.let { location ->
+                                coroutineScope.launch {
+                                    cameraPositionState.animate(
+                                        update = com.google.android.gms.maps.CameraUpdateFactory.newCameraPosition(
+                                            com.google.android.gms.maps.model.CameraPosition.Builder()
+                                                .target(location)
+                                                .zoom(16f)
+                                                .build()
+                                        )
                                     )
-                                )
+                                }
                             }
                         }
-                    },
+                    )
+                }
+
+                Row(
                     modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .padding(end = 16.dp, bottom = 36.dp)
-                )
+                        .align(Alignment.TopCenter)
+                        .fillMaxWidth()
+                        .padding(
+                            top = innerPadding.calculateTopPadding() + 32.dp,
+                            start = 16.dp,
+                            end = 16.dp
+                        ),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    BearingChip(
+                        modifier = Modifier,
+                        heading = locationState.value.heading
+                    )
+                    OverlayToggleButton(
+                        modifier = Modifier,
+                        isChecked = mapState.value.showZephrOverlay,
+                        onCheckedChange = { mapViewModel.toggleZephrOverlay() }
+                    )
+                }
+
             }
         } else {
             LoadingIndicator(modifier = Modifier.fillMaxSize())
