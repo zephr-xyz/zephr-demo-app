@@ -204,24 +204,25 @@ fun ZephrMapScreen(
                         mapViewModel.onMapLoaded()
                     }
                 ) {
-                    if (mapState.value.showZephrOverlay) {
-                        MapMarkers(
-                            zephrMarkerState = zephrMarkerState,
-                            androidMarkerState = androidMarkerState
-                        )
+                    // Always show both location markers
+                    MapMarker(
+                        markerState = zephrMarkerState,
+                        type = MarkerType.ZEPHR,
+                        key = "zephr_location_marker"
+                    )
 
+                    MapMarker(
+                        markerState = androidMarkerState,
+                        type = MarkerType.ANDROID,
+                        key = "android_location_marker"
+                    )
+
+                    if (mapState.value.showZephrOverlay) {
                         // FOV Sector overlay using dedicated component
                         FovSector(
                             centerLocation = locationState.value.zephrLocation,
                             fovPoints = locationState.value.fovPoints,
                             alpha = 1f
-                        )
-                    } else {
-                        // Still show android marker
-                        MapMarker(
-                            markerState = androidMarkerState,
-                            type = MarkerType.ANDROID,
-                            key = "android_location_marker"
                         )
                     }
 
