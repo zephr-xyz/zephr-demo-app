@@ -29,6 +29,8 @@ import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.MapProperties
+import com.google.maps.android.compose.MapType
 import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
@@ -188,6 +190,9 @@ fun ZephrMapScreen(
                 GoogleMap(
                     modifier = Modifier.matchParentSize(),
                     cameraPositionState = cameraPositionState,
+                    properties = MapProperties(
+                        mapType = MapType.SATELLITE
+                    ),
                     uiSettings = MapUiSettings(
                         zoomGesturesEnabled = true,
                         scrollGesturesEnabled = true,

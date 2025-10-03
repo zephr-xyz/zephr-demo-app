@@ -52,8 +52,8 @@ fun FovSector(
     if (centerLocation != null && fovPoints.isNotEmpty() && alpha > 0f) {
         mapRenderer.RenderSector(
             points = fovPoints,
-            fillColor = ZephrOrange.copy(alpha = 0.15f * alpha),
-            strokeColor = ZephrOrange.copy(alpha = 0.4f * alpha),
+            fillColor = ZephrOrange.copy(alpha = 0.4f * alpha),
+            strokeColor = ZephrOrange.copy(alpha = 0.6f * alpha),
             strokeWidth = 1f
         )
     }
