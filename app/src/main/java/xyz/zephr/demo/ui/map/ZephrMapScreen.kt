@@ -154,7 +154,7 @@ fun ZephrMapScreen(
             update = com.google.android.gms.maps.CameraUpdateFactory.newCameraPosition(
                 com.google.android.gms.maps.model.CameraPosition.Builder()
                     .bearing(locationState.value.heading)
-                    .zoom(16f)
+                    .zoom(18f)
                     .target(zephrLocation)
                     .build()
             ),
@@ -171,13 +171,12 @@ fun ZephrMapScreen(
     ) {
         mapViewModel.onHeadingUpdate(locationState.value.heading, cameraPositionState.isMoving)
         if (!mapState.value.mapLoaded || cameraPositionState.isMoving) return@LaunchedEffect
-        cameraPositionState.animate(
+        cameraPositionState.move(
             update = com.google.android.gms.maps.CameraUpdateFactory.newCameraPosition(
                 com.google.android.gms.maps.model.CameraPosition.Builder(cameraPositionState.position)
                     .bearing(mapState.value.cameraPosition.bearing)
                     .build()
-            ),
-            durationMs = 300
+            )
         )
     }
 
@@ -270,7 +269,7 @@ fun ZephrMapScreen(
                                         update = com.google.android.gms.maps.CameraUpdateFactory.newCameraPosition(
                                             com.google.android.gms.maps.model.CameraPosition.Builder()
                                                 .target(location)
-                                                .zoom(16f)
+                                                .zoom(18f)
                                                 .build()
                                         )
                                     )
