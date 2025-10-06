@@ -278,6 +278,7 @@ fun ZephrMapScreen(
                                             com.google.android.gms.maps.model.CameraPosition.Builder()
                                                 .target(location)
                                                 .zoom(18f)
+                                                .bearing(locationState.value.heading)
                                                 .build()
                                         )
                                     )
