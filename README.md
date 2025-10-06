@@ -29,3 +29,12 @@ API_BASE_URL=https://api.zephr.xyz
  ```
  MAPS_API_KEY=<YOUR_MAPS_API_KEY>
  ```
+
+
+## Compass Heading Troubleshooting
+Sometimes the Android magnetometer can become uncalibrated, resulting in an inaccurate heading. This is inherent to the sensor in the device and out of our control, however the magnetometer can usually be recalibrate by moving your device in a figure-eight pattern, as described in this [Google support forum response](https://support.google.com/maps/thread/5071162?hl=en&msgid=5100167).
+
+![GIF of phone moving in a figure eight pattern](images/figure-eight.gif "Figure Eight Calibration Motion.")
+
+## License
+The code in this repository is licensed under the MIT License.
