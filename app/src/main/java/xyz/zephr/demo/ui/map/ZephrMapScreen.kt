@@ -18,6 +18,7 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -34,6 +35,8 @@ import com.google.maps.android.compose.MapType
 import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import xyz.zephr.demo.TAG
 import xyz.zephr.demo.presentation.map.viewmodel.LocationViewModel
@@ -139,17 +142,21 @@ fun ZephrMapScreen(
     // Initial positioning
     val hasInitiallyPositioned = remember { mutableStateOf(false) }
 
-    LaunchedEffect(mapState.value.mapLoaded) {
+    // Reset positioning flag when location becomes null (e.g., when app resumes from background)
+    LaunchedEffect(locationState.value.zephrLocation) {
+        if (locationState.value.zephrLocation == null) {
+            hasInitiallyPositioned.value = false
+        }
+    }
+
+    LaunchedEffect(mapState.value.mapLoaded, hasInitiallyPositioned.value) {
         if (!mapState.value.mapLoaded || hasInitiallyPositioned.value) return@LaunchedEffect
 
-        // Wait until we get the first Zephr location
-        var zephrLocation = locationState.value.zephrLocation
-        while (zephrLocation == null) {
-            kotlinx.coroutines.delay(100)
-            zephrLocation = locationState.value.zephrLocation
-        }
+        val zephrLocation = locationState.value.zephrLocation
+            ?: snapshotFlow { locationState.value.zephrLocation }
+                .filterNotNull()
+                .first()
 
-        hasInitiallyPositioned.value = true
         cameraPositionState.animate(
             update = com.google.android.gms.maps.CameraUpdateFactory.newCameraPosition(
                 com.google.android.gms.maps.model.CameraPosition.Builder()
@@ -160,6 +167,7 @@ fun ZephrMapScreen(
             ),
             durationMs = 2000
         )
+        hasInitiallyPositioned.value = true
     }
 
 

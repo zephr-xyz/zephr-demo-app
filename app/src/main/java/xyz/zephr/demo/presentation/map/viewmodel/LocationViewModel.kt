@@ -13,9 +13,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 import xyz.zephr.demo.TAG
 import xyz.zephr.demo.presentation.map.model.LocationState
@@ -45,6 +42,9 @@ class LocationViewModel @Inject constructor(
 
     private val zephrLocationFlow = MutableStateFlow<LatLng?>(null)
     private val zephrHeadingFlow = MutableStateFlow<Float?>(null)
+
+    private var latestLocation: LatLng? = null
+    private var latestHeading: Float = 0f
 
     private val zephrListener = object : ZephrEventListener {
         override fun onZephrLocationChanged(zephrLocationEvent: ZephrLocationEvent) {
@@ -85,30 +85,68 @@ class LocationViewModel @Inject constructor(
 
     private fun startCollectors() {
         viewModelScope.launch {
-            combine(zephrLocationFlow, zephrHeadingFlow) { location, heading ->
-                if (location != null && heading != null) Pair(location, heading) else null
+            zephrLocationFlow.collect { location ->
+                latestLocation = location
+                val current = _locationState.value
+                val shouldEmit = when {
+                    location == null -> current.zephrLocation != null
+                    current.zephrLocation == null -> true
+                    else -> distanceBetweenMeters(
+                        location,
+                        current.zephrLocation!!
+                    ) >= LOCATION_THRESHOLD_METERS
+                }
+                if (shouldEmit) {
+                    emitLocationState(force = true)
+                }
             }
-                .filterNotNull()
-                .distinctUntilChanged { old, new ->
-                    val locationClose =
-                        distanceBetweenMeters(old.first, new.first) < LOCATION_THRESHOLD_METERS
-                    val headingClose = abs(old.second - new.second) < HEADING_THRESHOLD_DEGREES
-                    locationClose && headingClose
-                }
-                .collect { (location, heading) ->
-                    val fovPoints = FovUtils.computeFovSectorPoints(
-                        center = location,
-                        bearing = heading,
-                        fovAngle = _locationState.value.fovAngle,
-                        radius = _locationState.value.fovRadius
-                    )
-                    _locationState.value = _locationState.value.copy(
-                        zephrLocation = location,
-                        heading = heading,
-                        fovPoints = fovPoints
-                    )
-                }
         }
+
+        viewModelScope.launch {
+            zephrHeadingFlow.collect { heading ->
+                if (heading == null) return@collect
+                val previousHeading = latestHeading
+                latestHeading = heading
+                if (abs(heading - previousHeading) >= HEADING_THRESHOLD_DEGREES) {
+                    emitLocationState()
+                }
+            }
+        }
+    }
+
+    private fun emitLocationState(force: Boolean = false) {
+        val location = latestLocation
+        val heading = latestHeading
+        val current = _locationState.value
+
+        val locationChanged = when {
+            location == null && current.zephrLocation == null -> false
+            location == null || current.zephrLocation == null -> true
+            else -> distanceBetweenMeters(
+                location,
+                current.zephrLocation!!
+            ) >= LOCATION_THRESHOLD_METERS
+        }
+        val headingChanged = abs(heading - current.heading) >= HEADING_THRESHOLD_DEGREES
+
+        if (!force && !locationChanged && !headingChanged) return
+
+        val fovPoints = if (location != null) {
+            FovUtils.computeFovSectorPoints(
+                center = location,
+                bearing = heading,
+                fovAngle = current.fovAngle,
+                radius = current.fovRadius
+            )
+        } else {
+            emptyList()
+        }
+
+        _locationState.value = current.copy(
+            zephrLocation = location,
+            heading = heading,
+            fovPoints = fovPoints
+        )
     }
 
     private fun distanceBetweenMeters(a: LatLng, b: LatLng): Float {
