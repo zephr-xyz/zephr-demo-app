@@ -18,8 +18,8 @@ To build and run the demo app:
  If you do not have credentials, head to https://zephr.xyz/developer-portal to get started.
  ```
  # API credentials
-API_USERNAME=<YOUR_ZEPHR_USERNAME>
-API_PASSWORD=<YOUR_ZEPHR_PASSWORD>
+API_USERNAME=YOUR_ZEPHR_USERNAME
+API_PASSWORD=YOUR_ZEPHR_PASSWORD
 # Zephr Overture API Base URL
 API_BASE_URL=https://api.zephr.xyz
  ```
@@ -27,7 +27,7 @@ API_BASE_URL=https://api.zephr.xyz
  ### Google Maps API
  You will need to provide your own Google Maps API key here.
  ```
- MAPS_API_KEY=<YOUR_MAPS_API_KEY>
+ MAPS_API_KEY=YOUR_MAPS_API_KEY
  ```
 
 
