@@ -225,15 +225,6 @@ fun ZephrMapScreen(
                         key = "android_location_marker"
                     )
 
-                    if (mapState.value.showZephrOverlay) {
-                        // FOV Sector overlay using dedicated component
-                        FovSector(
-                            centerLocation = locationState.value.zephrLocation,
-                            fovPoints = locationState.value.fovPoints,
-                            alpha = 1f
-                        )
-                    }
-
                     // Place markers
                     POIMarkersLayer(
                         locationState = locationState.value,
@@ -241,6 +232,17 @@ fun ZephrMapScreen(
                         selectedPlaceId = placesState.value.selectedPlace?.id,
                         markerStates = placeMarkerStates,
                         highlightEnabled = mapState.value.showZephrOverlay
+                    )
+                }
+
+                if (mapState.value.showZephrOverlay) {
+                    FovSector(
+                        cameraPositionState = cameraPositionState,
+                        centerLocation = locationState.value.zephrLocation,
+                        radiusMeters = locationState.value.fovRadius,
+                        fovAngle = locationState.value.fovAngle,
+                        alpha = 1f,
+                        modifier = Modifier.matchParentSize()
                     )
                 }
 

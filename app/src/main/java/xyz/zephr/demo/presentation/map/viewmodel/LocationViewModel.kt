@@ -16,7 +16,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import xyz.zephr.demo.TAG
 import xyz.zephr.demo.presentation.map.model.LocationState
-import xyz.zephr.demo.utils.FovUtils
 import xyz.zephr.sdk.v2.ZephrEventListener
 import xyz.zephr.sdk.v2.ZephrLocationManager
 import xyz.zephr.sdk.v2.model.ZephrLocationEvent
@@ -93,7 +92,7 @@ class LocationViewModel @Inject constructor(
                     current.zephrLocation == null -> true
                     else -> distanceBetweenMeters(
                         location,
-                        current.zephrLocation!!
+                        current.zephrLocation
                     ) >= LOCATION_THRESHOLD_METERS
                 }
                 if (shouldEmit) {
@@ -105,9 +104,14 @@ class LocationViewModel @Inject constructor(
         viewModelScope.launch {
             zephrHeadingFlow.collect { heading ->
                 if (heading == null) return@collect
+
                 val previousHeading = latestHeading
                 latestHeading = heading
-                if (abs(heading - previousHeading) >= HEADING_THRESHOLD_DEGREES) {
+
+                val shouldEmit =
+                    angularDifferenceDegrees(heading, previousHeading) >= HEADING_THRESHOLD_DEGREES
+
+                if (shouldEmit) {
                     emitLocationState()
                 }
             }
@@ -124,28 +128,17 @@ class LocationViewModel @Inject constructor(
             location == null || current.zephrLocation == null -> true
             else -> distanceBetweenMeters(
                 location,
-                current.zephrLocation!!
+                current.zephrLocation
             ) >= LOCATION_THRESHOLD_METERS
         }
-        val headingChanged = abs(heading - current.heading) >= HEADING_THRESHOLD_DEGREES
+        val headingChanged =
+            angularDifferenceDegrees(heading, current.heading) >= HEADING_THRESHOLD_DEGREES
 
         if (!force && !locationChanged && !headingChanged) return
-
-        val fovPoints = if (location != null) {
-            FovUtils.computeFovSectorPoints(
-                center = location,
-                bearing = heading,
-                fovAngle = current.fovAngle,
-                radius = current.fovRadius
-            )
-        } else {
-            emptyList()
-        }
 
         _locationState.value = current.copy(
             zephrLocation = location,
             heading = heading,
-            fovPoints = fovPoints
         )
     }
 
@@ -153,6 +146,11 @@ class LocationViewModel @Inject constructor(
         val results = FloatArray(1)
         Location.distanceBetween(a.latitude, a.longitude, b.latitude, b.longitude, results)
         return results.first()
+    }
+
+    private fun angularDifferenceDegrees(angle1: Float, angle2: Float): Float {
+        val diff = (angle2 - angle1 + 540f) % 360f - 180f
+        return abs(diff)
     }
 
     fun startLocationUpdates() {
@@ -179,6 +177,6 @@ class LocationViewModel @Inject constructor(
 
     companion object {
         private const val LOCATION_THRESHOLD_METERS = 0.5f
-        private const val HEADING_THRESHOLD_DEGREES = 0.5f
+        private const val HEADING_THRESHOLD_DEGREES = 0.05f
     }
 }
