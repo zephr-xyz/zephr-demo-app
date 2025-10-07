@@ -7,20 +7,21 @@ junitVersion = "1.3.0"
 espressoCore = "3.7.0"
 lifecycleRuntimeKtx = "2.9.4"
 activityCompose = "1.11.0"
-composeBom = "2025.09.00"
-mapsCompose = "6.10.0"
+composeBom = "2025.09.01"
+mapsCompose = "6.12.0"
 secrets = "2.0.1"
-hilt = "2.57.1"
+hilt = "2.57.2"
 hiltNavigationCompose = "1.3.0"
-zephrSdk = "0.0.3-SNAPSHOT"
 accompanistPermissions = "0.37.3"
-okhttp = "4.12.0"
-retrofit = "2.9.0"
-gson = "2.10.1"
-firebaseBom = "33.6.0"
-googleServices = "4.4.2"
-materialIconsExtended = "1.7.5"
+okhttp = "5.1.0"
+retrofit = "3.0.0"
+gson = "2.13.2"
+firebaseBom = "34.3.0"
+googleServices = "4.4.3"
+materialIconsExtended = "1.7.8"
 securityCrypto = "1.1.0"
+
+zephrSdk = "0.1.0-SNAPSHOT"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -48,11 +49,11 @@ retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = 
 retrofit-gson = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "retrofit" }
 gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
-firebase-auth = { group = "com.google.firebase", name = "firebase-auth-ktx" }
+firebase-auth = { group = "com.google.firebase", name = "firebase-auth" }
 androidx-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended", version.ref = "materialIconsExtended" }
 androidx-security-crypto = { group = "androidx.security", name = "security-crypto", version.ref = "securityCrypto" }
 
-zephr-sdk = { group = "xyz.zephr.library.pr-prod", name = "zephrLib", version.ref = "zephrSdk" }
+zephr-sdk = { group = "xyz.zephr.sdk.pr-prod", name = "positioning", version.ref = "zephrSdk" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
