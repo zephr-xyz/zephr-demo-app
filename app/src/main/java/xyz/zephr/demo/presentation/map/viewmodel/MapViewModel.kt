@@ -6,6 +6,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import xyz.zephr.demo.presentation.map.model.MapCameraPosition
 import xyz.zephr.demo.presentation.map.model.MapState
 import javax.inject.Inject
 
@@ -34,23 +35,61 @@ class MapViewModel @Inject constructor() : ViewModel() {
         )
     }
 
-    fun onHeadingUpdate(headingDeg: Float, isCameraMoving: Boolean) {
+    fun updateCamera(position: MapCameraPosition) {
         val currentState = _mapState.value
-        if (!currentState.mapLoaded || isCameraMoving) return
+        if (!currentState.mapLoaded) return
 
-        val target = headingDeg
-        val current = currentState.cameraPosition.bearing
-        val delta = shortestDeltaDeg(target, current)
+        val current = currentState.cameraPosition
+        val currentTarget = current.target
+        val newTarget = position.target
 
-        if (delta > 1.0f) {
-            _mapState.value = currentState.copy(
-                cameraPosition = currentState.cameraPosition.copy(bearing = target)
-            )
+        val targetChanged = if (currentTarget == null || newTarget == null) {
+            newTarget != null
+        } else {
+            distanceBetween(currentTarget, newTarget) > LOCATION_THRESHOLD_METERS
         }
+
+        val bearingChanged =
+            shortestDeltaDeg(position.bearing, current.bearing) > HEADING_THRESHOLD_DEGREES
+
+        if (!targetChanged && !bearingChanged) return
+
+        _mapState.value = currentState.copy(
+            cameraPosition = current.copy(
+                target = newTarget ?: currentTarget,
+                bearing = position.bearing,
+                zoom = position.zoom
+            )
+        )
+    }
+
+    fun onHeadingUpdate(headingDeg: Float, isCameraMoving: Boolean) {
+        if (isCameraMoving) return
+        updateCamera(_mapState.value.cameraPosition.copy(bearing = headingDeg))
     }
 
     private fun shortestDeltaDeg(target: Float, current: Float): Float {
         val diff = ((target - current + 540f) % 360f) - 180f
         return kotlin.math.abs(diff)
+    }
+
+    private fun distanceBetween(
+        a: com.google.android.gms.maps.model.LatLng,
+        b: com.google.android.gms.maps.model.LatLng
+    ): Float {
+        val results = FloatArray(1)
+        android.location.Location.distanceBetween(
+            a.latitude,
+            a.longitude,
+            b.latitude,
+            b.longitude,
+            results
+        )
+        return results.first()
+    }
+
+    companion object {
+        private const val HEADING_THRESHOLD_DEGREES = 0.5f
+        private const val LOCATION_THRESHOLD_METERS = 0.5f
     }
 }

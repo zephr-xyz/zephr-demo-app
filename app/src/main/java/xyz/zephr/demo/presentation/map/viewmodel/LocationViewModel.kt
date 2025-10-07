@@ -2,15 +2,18 @@ package xyz.zephr.demo.presentation.map.viewmodel
 
 import android.app.Application
 import android.app.Service
+import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
 import com.google.android.gms.maps.model.LatLng
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import xyz.zephr.demo.TAG
 import xyz.zephr.demo.presentation.map.model.LocationState
 import xyz.zephr.demo.utils.FovUtils
@@ -19,6 +22,7 @@ import xyz.zephr.sdk.v2.ZephrLocationManager
 import xyz.zephr.sdk.v2.model.ZephrLocationEvent
 import xyz.zephr.sdk.v2.model.ZephrPoseEvent
 import javax.inject.Inject
+import kotlin.math.abs
 
 /**
  * ViewModel for location tracking functionality.
@@ -36,6 +40,11 @@ class LocationViewModel @Inject constructor(
     private val _locationState = MutableStateFlow(LocationState())
     val locationState: StateFlow<LocationState> = _locationState.asStateFlow()
 
+    private val zephrLocationFlow = MutableStateFlow<LatLng?>(null)
+    private val zephrHeadingFlow = MutableStateFlow<Float?>(null)
+
+    private var latestLocation: LatLng? = null
+    private var latestHeading: Float = 0f
 
     private val zephrListener = object : ZephrEventListener {
         override fun onZephrLocationChanged(zephrLocationEvent: ZephrLocationEvent) {
@@ -46,63 +55,104 @@ class LocationViewModel @Inject constructor(
                     TAG,
                     "GNSS Update - Status: $status, Lat: ${location.latitude}, Lng: ${location.longitude}, Alt: ${location.altitude}"
                 )
-                _locationState.value = _locationState.value.copy(
-                    zephrLocation = LatLng(location.latitude, location.longitude)
-                )
-                updateFovPoints()
+                zephrLocationFlow.value = LatLng(location.latitude, location.longitude)
             } else {
                 Log.d(TAG, "GNSS Update - Status: $status, Location: null")
-                updateFovPoints()
+                zephrLocationFlow.value = null
             }
         }
 
         override fun onPoseChanged(zephrPoseEvent: ZephrPoseEvent) {
-            Log.d(
-                TAG,
-                "Pose Update - yaw: ${zephrPoseEvent.yprWithTimestamp?.first?.get(0)} pitch: ${
-                    zephrPoseEvent.yprWithTimestamp?.first?.get(
-                        1
-                    )
-                } roll: ${zephrPoseEvent.yprWithTimestamp?.first?.get(2)}"
-            )
-
-            // Use heading in degrees reported by SDK
             val headingDeg = zephrPoseEvent.headingDegWithTimestamp?.first
             if (headingDeg != null) {
                 Log.d(TAG, "Bearing Update: Heading=$headingDeg° (source: timestamp)")
-                _locationState.value = _locationState.value.copy(heading = headingDeg)
-                updateFovPoints()
+                zephrHeadingFlow.value = headingDeg
             } else {
                 Log.d(TAG, "Bearing Update: No headingDegWithTimestamp available")
             }
         }
     }
 
-    private val androidListener = LocationListener { p0 ->
+    private val androidListener = LocationListener { location ->
         _locationState.value = _locationState.value.copy(
-            androidLocation = LatLng(p0.latitude, p0.longitude)
+            androidLocation = LatLng(location.latitude, location.longitude)
         )
     }
 
-    /**
-     * Updates the FOV points based on current location, heading, FOV angle, and radius.
-     */
-    private fun updateFovPoints() {
-        val currentState = _locationState.value
-        val zephrLocation = currentState.zephrLocation
+    init {
+        startCollectors()
+    }
 
-        if (zephrLocation != null) {
-            val fovPoints = FovUtils.computeFovSectorPoints(
-                center = zephrLocation,
-                bearing = currentState.heading,
-                fovAngle = currentState.fovAngle,
-                radius = currentState.fovRadius
-            )
-            _locationState.value = currentState.copy(fovPoints = fovPoints)
-        } else {
-            // Clear FOV points if no location available
-            _locationState.value = currentState.copy(fovPoints = emptyList())
+    private fun startCollectors() {
+        viewModelScope.launch {
+            zephrLocationFlow.collect { location ->
+                latestLocation = location
+                val current = _locationState.value
+                val shouldEmit = when {
+                    location == null -> current.zephrLocation != null
+                    current.zephrLocation == null -> true
+                    else -> distanceBetweenMeters(
+                        location,
+                        current.zephrLocation!!
+                    ) >= LOCATION_THRESHOLD_METERS
+                }
+                if (shouldEmit) {
+                    emitLocationState(force = true)
+                }
+            }
         }
+
+        viewModelScope.launch {
+            zephrHeadingFlow.collect { heading ->
+                if (heading == null) return@collect
+                val previousHeading = latestHeading
+                latestHeading = heading
+                if (abs(heading - previousHeading) >= HEADING_THRESHOLD_DEGREES) {
+                    emitLocationState()
+                }
+            }
+        }
+    }
+
+    private fun emitLocationState(force: Boolean = false) {
+        val location = latestLocation
+        val heading = latestHeading
+        val current = _locationState.value
+
+        val locationChanged = when {
+            location == null && current.zephrLocation == null -> false
+            location == null || current.zephrLocation == null -> true
+            else -> distanceBetweenMeters(
+                location,
+                current.zephrLocation!!
+            ) >= LOCATION_THRESHOLD_METERS
+        }
+        val headingChanged = abs(heading - current.heading) >= HEADING_THRESHOLD_DEGREES
+
+        if (!force && !locationChanged && !headingChanged) return
+
+        val fovPoints = if (location != null) {
+            FovUtils.computeFovSectorPoints(
+                center = location,
+                bearing = heading,
+                fovAngle = current.fovAngle,
+                radius = current.fovRadius
+            )
+        } else {
+            emptyList()
+        }
+
+        _locationState.value = current.copy(
+            zephrLocation = location,
+            heading = heading,
+            fovPoints = fovPoints
+        )
+    }
+
+    private fun distanceBetweenMeters(a: LatLng, b: LatLng): Float {
+        val results = FloatArray(1)
+        Location.distanceBetween(a.latitude, a.longitude, b.latitude, b.longitude, results)
+        return results.first()
     }
 
     fun startLocationUpdates() {
@@ -125,5 +175,10 @@ class LocationViewModel @Inject constructor(
         ZephrLocationManager.stop(getApplication())
         ZephrLocationManager.removeLocationUpdates(zephrListener)
         locationManager.removeUpdates(androidListener)
+    }
+
+    companion object {
+        private const val LOCATION_THRESHOLD_METERS = 0.5f
+        private const val HEADING_THRESHOLD_DEGREES = 0.5f
     }
 }
