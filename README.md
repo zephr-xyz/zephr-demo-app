@@ -12,7 +12,7 @@ To build and run the demo app:
  5. Build and run the app on a physical Android device (an Android emulated device does not receive GNSS measurements so cannot produce a Zephr position).
 
 ## Authenticating with Secrets Gradle Plugin
- There are a few steps needed to authenticate a few packages required in the app. We are using [secrets gradle plugin](https://github.com/google/secrets-gradle-plugin) to authenticate certain APIs, so you should place the following for each of these packages in a file titled `secrets.properties` in your project root directory:
+ There are a couple of steps needed to authenticate packages required in the app. We are using [secrets gradle plugin](https://github.com/google/secrets-gradle-plugin) to authenticate certain APIs, so you should place the following for each of these packages in a file titled `secrets.properties` in your project root directory:
 
  ### Zephr API
  If you do not have credentials, head to https://zephr.xyz/developer-portal to get started.
