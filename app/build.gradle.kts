@@ -68,17 +68,6 @@ android {
 repositories {
     google()
     mavenCentral()
-    maven {
-        url = uri("https://us-central1-maven.pkg.dev/zephr-xyz-firebase-development/maven-repo")
-        credentials {
-            username = "_json_key_base64"
-            password = findProperty("zephr_maven_repo.password") as String?
-                ?: throw GradleException("Missing required gradle property needed to access zephr maven repo: 'zephr_maven_repo.password'")
-        }
-        authentication {
-            create<BasicAuthentication>("basic")
-        }
-    }
 }
 
 dependencies {
