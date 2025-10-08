@@ -21,7 +21,7 @@ googleServices = "4.4.3"
 materialIconsExtended = "1.7.8"
 securityCrypto = "1.1.0"
 
-zephrSdk = "0.2.0"
+zephrSdk = "0.2.+"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
