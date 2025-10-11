@@ -46,7 +46,7 @@ API_BASE_URL=https://api.zephr.xyz
 
 ### Google Maps API
 
-You will need to provide your own Google Maps API key here.
+You will also need to provide your own Google Maps API key in the same `secrets.properties` file for map imagery.
 
 ```
 MAPS_API_KEY=YOUR_MAPS_API_KEY
