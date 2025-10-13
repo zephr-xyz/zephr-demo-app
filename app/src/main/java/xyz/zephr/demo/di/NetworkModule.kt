@@ -12,10 +12,10 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import xyz.zephr.demo.BuildConfig
-import xyz.zephr.demo.data.api.PlacesApiService
 import xyz.zephr.demo.data.local.AuthTokenStore
 import xyz.zephr.demo.data.network.AuthEventBus
 import xyz.zephr.demo.data.network.AuthInterceptor
+import xyz.zephr.places.network.PlacesApiService
 import java.util.concurrent.TimeUnit
 import javax.inject.Named
 import javax.inject.Singleton
@@ -29,7 +29,6 @@ object NetworkModule {
     fun provideGson(): Gson {
         return GsonBuilder()
             .serializeNulls()
-            .setLenient()
             .disableHtmlEscaping()
             .create()
     }

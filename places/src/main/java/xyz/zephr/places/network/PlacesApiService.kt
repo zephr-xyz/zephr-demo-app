@@ -1,8 +1,8 @@
-package xyz.zephr.demo.data.api
+package xyz.zephr.places.network
 
 import retrofit2.http.GET
 import retrofit2.http.Query
-import xyz.zephr.demo.data.model.PlacesResponse
+import xyz.zephr.places.network.model.PlacesResponse
 
 interface PlacesApiService {
     @GET("places/search")

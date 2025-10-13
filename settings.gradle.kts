@@ -11,10 +11,7 @@ pluginManagement {
         gradlePluginPortal()
     }
 }
-dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.PREFER_PROJECT)
-}
-
 rootProject.name = "Zephr Demo App"
 include(":app")
+include(":places")
  

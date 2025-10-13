@@ -8,12 +8,13 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import xyz.zephr.demo.data.model.Place
 import xyz.zephr.demo.domain.repository.AuthRepository
-import xyz.zephr.demo.domain.repository.PlacesRepository
 import xyz.zephr.demo.presentation.map.model.PlacesUiState
+import xyz.zephr.places.api.Place
+import xyz.zephr.places.api.PlacesRepository
 import javax.inject.Inject
 
+@Suppress("unused") // Exposed to UI event handlers wired via Compose.
 @HiltViewModel
 class PlacesViewModel @Inject constructor(
     private val placesRepository: PlacesRepository,

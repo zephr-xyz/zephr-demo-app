@@ -2,7 +2,7 @@ package xyz.zephr.demo.presentation.map.model
 
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.flow.Flow
-import xyz.zephr.demo.data.model.Place
+import xyz.zephr.places.api.Place
 
 /**
  * Interface for map engine abstraction.

@@ -1,4 +1,4 @@
-package xyz.zephr.demo.data.model
+package xyz.zephr.places.network.model
 
 import com.google.gson.annotations.SerializedName
 

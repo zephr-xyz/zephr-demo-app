@@ -1,21 +1,22 @@
-package xyz.zephr.demo.data.repository
+package xyz.zephr.places.repository
 
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import xyz.zephr.demo.data.api.PlacesApiService
-import xyz.zephr.demo.data.model.Place
-import xyz.zephr.demo.domain.repository.PlacesRepository
-import javax.inject.Inject
-import javax.inject.Singleton
+import xyz.zephr.places.api.Place
+import xyz.zephr.places.api.PlacesRepository
+import xyz.zephr.places.network.PlacesApiService
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
 
-@Singleton
-class PlacesRepositoryImpl @Inject constructor(
+/**
+ * Default implementation backed by the Zephr Places API. Consumers can replace this binding with a
+ * different implementation without touching the app module.
+ */
+internal class DefaultPlacesRepository(
     private val placesApiService: PlacesApiService
 ) : PlacesRepository {
 
@@ -43,7 +44,6 @@ class PlacesRepositoryImpl @Inject constructor(
         return try {
             val location = currentLocation
             if (location != null) {
-                // Fetch places from API within configured radius
                 val apiPlaces = getNearbyPlaces(
                     lat = location.latitude,
                     lng = location.longitude,
@@ -54,7 +54,6 @@ class PlacesRepositoryImpl @Inject constructor(
                 _places.value = apiPlaces
                 Result.success(Unit)
             } else {
-                // Don't load any places without location
                 _places.value = emptyList()
                 Result.failure(Exception("No location available for fetching places"))
             }
@@ -77,7 +76,6 @@ class PlacesRepositoryImpl @Inject constructor(
 
             _places.value = apiPlaces
         } catch (_: Exception) {
-
             _places.value = emptyList()
         }
     }
@@ -102,7 +100,7 @@ class PlacesRepositoryImpl @Inject constructor(
                 limit = limit
             )
 
-            val places = response.features.take(limit).map { feature ->
+            response.features.take(limit).map { feature ->
                 val props = feature.properties
                 val name = props.name ?: props.overtureCompat?.names?.primary ?: "Unnamed"
                 val category = props.primaryCategory ?: props.category
@@ -126,8 +124,6 @@ class PlacesRepositoryImpl @Inject constructor(
                     isInFOV = false
                 )
             }
-
-            places
         } catch (e: Exception) {
             throw Exception("Failed to fetch places: ${e.message}")
         }
@@ -156,5 +152,8 @@ class PlacesRepositoryImpl @Inject constructor(
 
         return earthRadius * c
     }
-
 }
+
+fun defaultPlacesRepository(
+    placesApiService: PlacesApiService
+): PlacesRepository = DefaultPlacesRepository(placesApiService)
