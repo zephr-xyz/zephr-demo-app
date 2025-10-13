@@ -1,9 +1,12 @@
-package xyz.zephr.demo.domain.repository
+package xyz.zephr.places.api
 
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.flow.Flow
-import xyz.zephr.demo.data.model.Place
 
+/**
+ * Contract for providing place data to the host application. Implementations can source places
+ * from any backend or local provider and remain swappable at build time.
+ */
 interface PlacesRepository {
     fun getAllPlaces(): Flow<List<Place>>
 

@@ -1,5 +1,4 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
@@ -25,25 +24,11 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
-    val secretsFile = rootProject.file("secrets.properties")
-    val secrets = Properties().apply {
-        require(secretsFile.exists()) {
-            "Missing secrets.properties file at ${secretsFile.absolutePath}"
-        }
-        secretsFile.inputStream().use { load(it) }
-    }
-
     buildTypes {
         debug {
-            buildConfigField("String", "API_BASE_URL", "\"${secrets.getProperty("API_BASE_URL")}\"")
-            buildConfigField("String", "API_USERNAME", "\"${secrets.getProperty("API_USERNAME")}\"")
-            buildConfigField("String", "API_PASSWORD", "\"${secrets.getProperty("API_PASSWORD")}\"")
         }
         release {
             isMinifyEnabled = false
-            buildConfigField("String", "API_BASE_URL", "\"${secrets.getProperty("API_BASE_URL")}\"")
-            buildConfigField("String", "API_USERNAME", "\"${secrets.getProperty("API_USERNAME")}\"")
-            buildConfigField("String", "API_PASSWORD", "\"${secrets.getProperty("API_PASSWORD")}\"")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -71,6 +56,8 @@ repositories {
 }
 
 dependencies {
+
+    implementation(project(":places"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -105,11 +92,6 @@ dependencies {
     implementation(libs.zephr.sdk) {
         isChanging = true
     }
-
-    // Firebase
-    implementation(platform(libs.firebase.bom))
-    implementation(libs.firebase.auth)
-    implementation(libs.androidx.security.crypto)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

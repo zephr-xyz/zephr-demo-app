@@ -9,10 +9,10 @@ import androidx.compose.ui.res.colorResource
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import xyz.zephr.demo.R
-import xyz.zephr.demo.data.model.Place
 import xyz.zephr.demo.presentation.map.model.LocationState
 import xyz.zephr.demo.utils.FovUtils
 import xyz.zephr.demo.utils.MapIconUtils
+import xyz.zephr.places.api.Place
 
 @Composable
 fun POIMarkersLayer(

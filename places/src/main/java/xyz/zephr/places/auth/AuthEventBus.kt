@@ -1,4 +1,4 @@
-package xyz.zephr.demo.data.network
+package xyz.zephr.places.auth
 
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -12,4 +12,3 @@ class AuthEventBus {
         _events.tryEmit(Unit)
     }
 }
-

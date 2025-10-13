@@ -1,4 +1,4 @@
-package xyz.zephr.demo.domain.repository
+package xyz.zephr.places.auth
 
 interface AuthRepository {
     suspend fun authenticate(): Result<Unit>

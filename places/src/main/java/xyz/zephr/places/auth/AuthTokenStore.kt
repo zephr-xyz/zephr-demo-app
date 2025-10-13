@@ -1,4 +1,4 @@
-package xyz.zephr.demo.data.local
+package xyz.zephr.places.auth
 
 import android.content.Context
 import android.content.SharedPreferences
@@ -6,7 +6,7 @@ import android.util.Log
 import androidx.core.content.edit
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
-import xyz.zephr.demo.BuildConfig
+import xyz.zephr.places.BuildConfig
 
 class AuthTokenStore(context: Context) {
 
