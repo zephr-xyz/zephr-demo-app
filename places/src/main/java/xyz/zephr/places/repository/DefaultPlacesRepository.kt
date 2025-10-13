@@ -13,7 +13,7 @@ import kotlin.math.sin
 import kotlin.math.sqrt
 
 /**
- * Default implementation backed by the Zephr Places API. Consumers can replace this binding with a
+ * Default implementation backed by the Zephr Places API. Developers can replace this binding with a
  * different implementation without touching the app module.
  */
 internal class DefaultPlacesRepository(
@@ -153,7 +153,3 @@ internal class DefaultPlacesRepository(
         return earthRadius * c
     }
 }
-
-fun defaultPlacesRepository(
-    placesApiService: PlacesApiService
-): PlacesRepository = DefaultPlacesRepository(placesApiService)

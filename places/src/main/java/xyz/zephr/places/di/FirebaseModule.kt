@@ -1,4 +1,4 @@
-package xyz.zephr.demo.di
+package xyz.zephr.places.di
 
 import android.content.Context
 import com.google.firebase.FirebaseApp
@@ -8,13 +8,11 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import xyz.zephr.demo.data.local.AuthTokenStore
-import xyz.zephr.demo.data.network.AuthEventBus
 import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-object AppModule {
+object FirebaseModule {
 
     @Provides
     @Singleton
@@ -29,14 +27,4 @@ object AppModule {
     fun provideFirebaseAuth(firebaseApp: FirebaseApp): FirebaseAuth {
         return FirebaseAuth.getInstance(firebaseApp)
     }
-
-    @Provides
-    @Singleton
-    fun provideAuthTokenStore(@ApplicationContext context: Context): AuthTokenStore {
-        return AuthTokenStore(context)
-    }
-
-    @Provides
-    @Singleton
-    fun provideAuthEventBus(): AuthEventBus = AuthEventBus()
 }

@@ -1,7 +1,7 @@
-package xyz.zephr.demo.data.network.constants
+package xyz.zephr.places.auth
 
 /**
- * Constants for HTTP-related values used across the network layer.
+ * Constants for HTTP-related values used across the network/auth layer.
  */
 object HttpConstants {
     // HTTP Headers

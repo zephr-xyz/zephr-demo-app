@@ -1,28 +1,27 @@
-package xyz.zephr.demo.di
+package xyz.zephr.places.di
 
+import android.content.Context
 import com.google.firebase.auth.FirebaseAuth
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
-import xyz.zephr.demo.BuildConfig
-import xyz.zephr.demo.data.local.AuthTokenStore
-import xyz.zephr.demo.data.network.AuthEventBus
-import xyz.zephr.demo.data.network.AuthInterceptor
-import xyz.zephr.places.network.PlacesApiService
+import xyz.zephr.places.BuildConfig
+import xyz.zephr.places.auth.AuthEventBus
+import xyz.zephr.places.auth.AuthInterceptor
+import xyz.zephr.places.auth.AuthTokenStore
 import java.util.concurrent.TimeUnit
 import javax.inject.Named
 import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-object NetworkModule {
+object PlacesNetworkModule {
 
     @Provides
     @Singleton
@@ -31,6 +30,16 @@ object NetworkModule {
             .serializeNulls()
             .disableHtmlEscaping()
             .create()
+    }
+
+    @Provides
+    @Singleton
+    fun provideAuthEventBus(): AuthEventBus = AuthEventBus()
+
+    @Provides
+    @Singleton
+    fun provideAuthTokenStore(@ApplicationContext context: Context): AuthTokenStore {
+        return AuthTokenStore(context)
     }
 
     @Provides
@@ -61,18 +70,6 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    @Named("auth")
-    fun provideAuthenticatedOkHttpClient(
-        @Named("raw") baseClient: OkHttpClient,
-        authInterceptor: AuthInterceptor
-    ): OkHttpClient {
-        return baseClient.newBuilder()
-            .addInterceptor(authInterceptor)
-            .build()
-    }
-
-    @Provides
-    @Singleton
     fun provideAuthInterceptor(
         firebaseAuth: FirebaseAuth,
         tokenStore: AuthTokenStore,
@@ -84,22 +81,12 @@ object NetworkModule {
     @Provides
     @Singleton
     @Named("auth")
-    fun provideAuthenticatedRetrofit(
-        @Named("auth") okHttpClient: OkHttpClient,
-        gson: Gson
-    ): Retrofit {
-        val baseUrl = "${BuildConfig.API_BASE_URL}/v1/"
-
-        return Retrofit.Builder()
-            .baseUrl(baseUrl)
-            .addConverterFactory(GsonConverterFactory.create(gson))
-            .client(okHttpClient)
+    fun provideAuthenticatedOkHttpClient(
+        @Named("raw") baseClient: OkHttpClient,
+        authInterceptor: AuthInterceptor
+    ): OkHttpClient {
+        return baseClient.newBuilder()
+            .addInterceptor(authInterceptor)
             .build()
-    }
-
-    @Provides
-    @Singleton
-    fun providePlacesApiService(@Named("auth") retrofit: Retrofit): PlacesApiService {
-        return retrofit.create(PlacesApiService::class.java)
     }
 }

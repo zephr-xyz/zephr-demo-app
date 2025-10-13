@@ -1,4 +1,4 @@
-package xyz.zephr.demo.data.network
+package xyz.zephr.places.auth
 
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.runBlocking
@@ -6,8 +6,6 @@ import kotlinx.coroutines.tasks.await
 import okhttp3.Interceptor
 import okhttp3.Request
 import okhttp3.Response
-import xyz.zephr.demo.data.local.AuthTokenStore
-import xyz.zephr.demo.data.network.constants.HttpConstants
 
 class AuthInterceptor(
     private val firebaseAuth: FirebaseAuth,

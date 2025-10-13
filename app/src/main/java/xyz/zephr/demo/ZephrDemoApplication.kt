@@ -1,13 +1,12 @@
 package xyz.zephr.demo
 
 import android.app.Application
-import com.google.firebase.FirebaseApp
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
-import xyz.zephr.demo.domain.repository.AuthRepository
+import xyz.zephr.places.auth.AuthRepository
 import javax.inject.Inject
 
 @HiltAndroidApp
@@ -20,7 +19,6 @@ class ZephrDemoApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        FirebaseApp.initializeApp(this)
         applicationScope.launch {
             try {
                 if (!authRepository.isAuthenticated()) {

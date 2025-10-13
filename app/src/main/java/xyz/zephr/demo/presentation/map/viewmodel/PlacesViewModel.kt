@@ -8,10 +8,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import xyz.zephr.demo.domain.repository.AuthRepository
 import xyz.zephr.demo.presentation.map.model.PlacesUiState
 import xyz.zephr.places.api.Place
 import xyz.zephr.places.api.PlacesRepository
+import xyz.zephr.places.auth.AuthRepository
 import javax.inject.Inject
 
 @Suppress("unused") // Exposed to UI event handlers wired via Compose.

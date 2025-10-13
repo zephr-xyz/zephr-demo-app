@@ -1,13 +1,10 @@
-package xyz.zephr.demo.data.repository
+package xyz.zephr.places.auth
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.tasks.await
-import xyz.zephr.demo.BuildConfig
-import xyz.zephr.demo.data.local.AuthTokenStore
-import xyz.zephr.demo.data.network.constants.HttpConstants
-import xyz.zephr.demo.domain.repository.AuthRepository
+import xyz.zephr.places.BuildConfig
 import javax.inject.Inject
 import javax.inject.Singleton
 
