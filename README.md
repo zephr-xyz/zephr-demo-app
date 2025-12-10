@@ -34,7 +34,7 @@ Instructions for retrieving the necessary signing key details associated with yo
 
 Usage of the Zephrture API requires user credentials during the soft launch period and for simplicity -- the demo app is setup for you to provide credentials for your user account at build time. In a real app user credentials for Zephrure api will be handled by app logic within a user login flow.
 
-For this demo -- simply place your zephr developer portal username and password in a file titled `secrets.properties` in the project root directory -- replace `YOUR_ZEPHR_USERNAME` and `YOUR_ZEPHR_PASSWORD` in the example below
+For this demo -- simply place your zephr developer portal username and password in a file titled `secrets.properties` in the project root directory -- replace `YOUR_ZEPHR_USERNAME` and `YOUR_ZEPHR_PASSWORD` in the example below.  (If you do not have a password because you have logged in via Google SSO, you can follow these instructions to obtain a password: https://github.com/zephr-xyz/zephr-realtime-sdk-docs/discussions/15)
 
 ```
 # API credentials
