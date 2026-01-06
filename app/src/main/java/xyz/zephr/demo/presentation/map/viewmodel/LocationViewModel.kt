@@ -16,10 +16,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import xyz.zephr.demo.TAG
 import xyz.zephr.demo.presentation.map.model.LocationState
-import xyz.zephr.sdk.v2.ZephrEventListener
-import xyz.zephr.sdk.v2.ZephrLocationManager
-import xyz.zephr.sdk.v2.model.ZephrLocationEvent
-import xyz.zephr.sdk.v2.model.ZephrPoseEvent
+import xyz.zephr.sdk.api.ZephrLocationManager
+import xyz.zephr.sdk.api.ZephrTypes
 import javax.inject.Inject
 import kotlin.math.abs
 
@@ -45,8 +43,8 @@ class LocationViewModel @Inject constructor(
     private var latestLocation: LatLng? = null
     private var latestHeading: Float = 0f
 
-    private val zephrListener = object : ZephrEventListener {
-        override fun onZephrLocationChanged(zephrLocationEvent: ZephrLocationEvent) {
+    private val zephrListener = object : ZephrTypes.ZephrEventListener {
+        override fun onZephrLocationChanged(zephrLocationEvent: ZephrTypes.ZephrLocationEvent) {
             val status = zephrLocationEvent.status
             val location = zephrLocationEvent.location
             if (location != null) {
@@ -61,7 +59,7 @@ class LocationViewModel @Inject constructor(
             }
         }
 
-        override fun onPoseChanged(zephrPoseEvent: ZephrPoseEvent) {
+        override fun onPoseChanged(zephrPoseEvent: ZephrTypes.ZephrPoseEvent) {
             val headingDeg = zephrPoseEvent.headingDegWithTimestamp?.first
             if (headingDeg != null) {
                 Log.d(TAG, "Bearing Update: Heading=$headingDeg° (source: timestamp)")

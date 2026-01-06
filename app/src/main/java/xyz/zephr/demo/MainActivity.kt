@@ -23,7 +23,7 @@ import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import dagger.hilt.android.AndroidEntryPoint
 import xyz.zephr.demo.ui.map.ZephrMapScreen
 import xyz.zephr.demo.ui.theme.ZephrTheme
-import xyz.zephr.sdk.v2.ZephrLocationManager
+import xyz.zephr.sdk.api.ZephrLocationManager
 
 const val TAG = "ZephrDemoApp"
 
