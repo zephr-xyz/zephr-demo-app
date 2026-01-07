@@ -1,6 +1,7 @@
 package xyz.zephr.demo
 
 import android.Manifest
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -36,10 +37,14 @@ class MainActivity : ComponentActivity() {
         setContent {
             ZephrTheme {
                 val permissionState = rememberMultiplePermissionsState(
-                    permissions = listOf(
+                    permissions = mutableListOf(
                         Manifest.permission.ACCESS_FINE_LOCATION,
                         Manifest.permission.ACCESS_COARSE_LOCATION
-                    )
+                    ).apply {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                            add(Manifest.permission.POST_NOTIFICATIONS)
+                        }
+                    }
                 )
 
                 if (permissionState.allPermissionsGranted) {
