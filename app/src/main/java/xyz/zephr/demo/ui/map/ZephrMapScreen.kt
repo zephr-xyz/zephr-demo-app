@@ -1,6 +1,7 @@
 package xyz.zephr.demo.ui.map
 
 import android.Manifest
+import android.os.Build
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -99,10 +100,14 @@ fun ZephrMapScreen(
 
     // We check permissions again so we can kill the SDK if permissions are revoked
     val permissionState = rememberMultiplePermissionsState(
-        permissions = listOf(
+        permissions = mutableListOf(
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_COARSE_LOCATION
-        )
+        ).apply {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                add(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
     )
 
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -112,8 +117,8 @@ fun ZephrMapScreen(
         val observer = LifecycleEventObserver { _, event ->
             if (!permissionState.allPermissionsGranted) return@LifecycleEventObserver
             when (event) {
-                Lifecycle.Event.ON_RESUME -> locationViewModel.startLocationUpdates()
-                Lifecycle.Event.ON_PAUSE -> locationViewModel.stopLocationUpdates()
+                Lifecycle.Event.ON_CREATE -> locationViewModel.startLocationUpdates()
+                Lifecycle.Event.ON_DESTROY -> locationViewModel.stopLocationUpdates()
                 else -> {}
             }
         }
