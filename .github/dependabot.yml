@@ -1,0 +1,8 @@
+# Set up dependabot to open weekly PRs if packages are out of date
+
+version: 2
+updates:
+  - package-ecosystem: "gradle"
+    directory: "/"
+    schedule:
+      interval: "weekly"
