@@ -84,7 +84,7 @@ fun ZephrMapScreen(
     }
 
     // Some devices are experiencing a bug where onMapLoaded is never called, so
-    // we make our own map ready signal hear by waiting for a non-null projection.
+    // we make our own map ready signal here by waiting for a non-null projection.
     LaunchedEffect(cameraPositionState.projection) {
         if (cameraPositionState.projection == null) {
             return@LaunchedEffect
