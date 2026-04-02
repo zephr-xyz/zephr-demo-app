@@ -20,12 +20,12 @@ class MapViewModel @Inject constructor() : ViewModel() {
     private val _mapState = MutableStateFlow(MapState())
     val mapState: StateFlow<MapState> = _mapState.asStateFlow()
 
-    fun onMapLoaded() {
-        Log.d("xyz.zephr.demo", "onMapLoaded called - setting mapLoaded = true")
-        _mapState.value = _mapState.value.copy(mapLoaded = true)
+    fun onMapReady() {
+        Log.d("xyz.zephr.demo", "onMapReady called - setting mapReady = true")
+        _mapState.value = _mapState.value.copy(mapReady = true)
         Log.d(
             "xyz.zephr.demo",
-            "onMapLoaded completed - mapLoaded is now: ${_mapState.value.mapLoaded}"
+            "onMapReady completed - mapReady is now: ${_mapState.value.mapReady}"
         )
     }
 
@@ -37,7 +37,7 @@ class MapViewModel @Inject constructor() : ViewModel() {
 
     fun updateCamera(position: MapCameraPosition) {
         val currentState = _mapState.value
-        if (!currentState.mapLoaded) return
+        if (!currentState.mapReady) return
 
         val current = currentState.cameraPosition
         val currentTarget = current.target

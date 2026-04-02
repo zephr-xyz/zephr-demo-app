@@ -2,7 +2,6 @@ package xyz.zephr.demo.ui.map
 
 import android.Manifest
 import android.os.Build
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -39,7 +38,6 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import xyz.zephr.demo.TAG
 import xyz.zephr.demo.presentation.map.viewmodel.LocationViewModel
 import xyz.zephr.demo.presentation.map.viewmodel.MapViewModel
 import xyz.zephr.demo.presentation.map.viewmodel.PlacesViewModel
@@ -75,6 +73,30 @@ fun ZephrMapScreen(
     // Place marker states
     val placeMarkerStates = remember {
         mutableStateMapOf<String, MarkerState>()
+    }
+
+    val hasReadProjection = remember {
+        mutableStateOf(false)
+    }
+
+    val hasSignaledMapReady = remember {
+        mutableStateOf(false)
+    }
+
+    // Some devices are experiencing a bug where onMapLoaded is never called, so
+    // we make our own map ready signal hear by waiting for a non-null projection.
+    LaunchedEffect(cameraPositionState.projection) {
+        if (cameraPositionState.projection == null) {
+            return@LaunchedEffect
+        }
+        hasReadProjection.value = true
+    }
+
+    LaunchedEffect(hasReadProjection.value) {
+        if(hasReadProjection.value && !hasSignaledMapReady.value) {
+            mapViewModel.onMapReady()
+            hasSignaledMapReady.value = true
+        }
     }
 
     // Update place marker states when places change
@@ -154,8 +176,8 @@ fun ZephrMapScreen(
         }
     }
 
-    LaunchedEffect(mapState.value.mapLoaded, hasInitiallyPositioned.value) {
-        if (!mapState.value.mapLoaded || hasInitiallyPositioned.value) return@LaunchedEffect
+    LaunchedEffect(mapState.value.mapReady, hasInitiallyPositioned.value) {
+        if (!mapState.value.mapReady || hasInitiallyPositioned.value) return@LaunchedEffect
 
         val zephrLocation = locationState.value.zephrLocation
             ?: snapshotFlow { locationState.value.zephrLocation }
@@ -179,11 +201,11 @@ fun ZephrMapScreen(
     // Delegate bearing decision to VM and apply the decided bearing
     LaunchedEffect(
         locationState.value.heading,
-        mapState.value.mapLoaded,
+        mapState.value.mapReady,
         cameraPositionState.isMoving
     ) {
         mapViewModel.onHeadingUpdate(locationState.value.heading, cameraPositionState.isMoving)
-        if (!mapState.value.mapLoaded || cameraPositionState.isMoving) return@LaunchedEffect
+        if (!mapState.value.mapReady || cameraPositionState.isMoving) return@LaunchedEffect
         cameraPositionState.animate(
             update = com.google.android.gms.maps.CameraUpdateFactory.newCameraPosition(
                 com.google.android.gms.maps.model.CameraPosition.Builder(cameraPositionState.position)
@@ -213,10 +235,6 @@ fun ZephrMapScreen(
                         rotationGesturesEnabled = false,
                         zoomControlsEnabled = false
                     ),
-                    onMapLoaded = {
-                        Log.d(TAG, "GoogleMap onMapLoaded callback fired - map successfully loaded")
-                        mapViewModel.onMapLoaded()
-                    }
                 ) {
                     // Always show both location markers
                     MapMarker(

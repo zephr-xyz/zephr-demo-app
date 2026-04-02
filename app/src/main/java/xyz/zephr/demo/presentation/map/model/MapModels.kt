@@ -32,7 +32,7 @@ data class PlacesUiState(
 )
 
 data class MapState(
-    val mapLoaded: Boolean = false,
+    val mapReady: Boolean = false,
     val isFollowingZephr: Boolean = true,
     val cameraPosition: MapCameraPosition = MapCameraPosition(),
     val showZephrOverlay: Boolean = true
