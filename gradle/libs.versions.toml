@@ -21,7 +21,7 @@ googleServices = "4.4.4"
 materialIconsExtended = "1.7.8"
 securityCrypto = "1.1.0"
 playServicesMaps = "20.0.0"
-coroutines = "1.10.2"
+coroutines = "1.11.0"
 devtoolsKsp = "2.3.7"
 
 zephrSdk = "0.4.+"
